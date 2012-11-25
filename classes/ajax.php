@@ -17,17 +17,24 @@ class Ajax {
     }
 
     /**
-     * Generate a unique token.
-     */
-    private function generate_unique_token() {
-        
-    }
-
-    /**
      * Create an Ajax token to launch a specific request.
      */
     public function create_token(Ajax_Request $request) {
-        $token = $this->generate_unique_token();
+
+
+        function generate_unique_token(Ajax_Request $request, $uniqueifier) {
+            return sha1(serialize($request) . $uniqueifier);
+        }
+
+        $uniqueifier = "";
+        $token = "";
+
+        // Tant qu'il existe une Requete poss/dant le m[eme token, en generer un autre.
+        do {
+            $token = generate_unique_token($request, $uniqueifier);
+            $uniqueifier = sha1($uniqueifier);
+        } while (Cache::instance("ajax")->get($token) instanceof Request_Ajax);
+
         Cache::instance("ajax")->set($token, $request);
         return $token;
     }
